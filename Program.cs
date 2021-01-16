@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -12,8 +12,7 @@ namespace DilbertImageDownloader
    public class Program
    {
       private const string BaseUrl = "http://dilbert.com/strip/";
-      private const string ImageUrlRegex = @"data-image=""(//assets\.amuniversal\.com/[^""]*)""";
-      private const string ImageBaseUrl = "https:";
+      private const string ImageUrlRegex = @"https://assets\.amuniversal\.com/\w+";
       private static readonly DateTime StartDate = new DateTime(1989, 4, 16);
       private const string SaveNameFormat = "Dilbert {date}.gif";
 
@@ -144,7 +143,7 @@ namespace DilbertImageDownloader
       {
          Regex imageUrlRegex = new Regex(ImageUrlRegex);
          Match imageUrlMatch = imageUrlRegex.Match(page);
-         imageUrl = ImageBaseUrl + imageUrlMatch.Groups[1].Value;
+         imageUrl = imageUrlMatch.Value;
          return imageUrlMatch.Success;
       }
    }
