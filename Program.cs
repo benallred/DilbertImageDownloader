@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -17,9 +17,7 @@ namespace DilbertImageDownloader
       private static readonly DateTime StartDate = new DateTime(1989, 4, 16);
       private const string SaveNameFormat = "Dilbert {date}.gif";
 
-      // When running manually:
-      // dotnet run count=1 autoclose=true savefolder=C:\BenEx\Humor\Dilbert readingfolder=C:\Ben\Desktop\Miguk\Dilbert
-      // dotnet %UserProfile%\OneDrive\Ben\Projects\DilbertImageDownloader\bin\Debug\netcoreapp2.2\DilbertImageDownloader.dll" count=all autoclose=true savefolder=C:\BenEx\Humor\Dilbert readingfolder=C:\Ben\Desktop\Miguk\Dilbert
+      // dotnet run count=all autoclose=true savefolder=C:\BenEx\Humor\Dilbert readingfolder=C:\Ben\Desktop\Miguk\Dilbert
       public static void Main(string[] args)
       {
          Console.WriteLine("Dilbert Image Downloader");
