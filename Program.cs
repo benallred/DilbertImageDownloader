@@ -22,8 +22,7 @@ namespace DilbertImageDownloader
 
          if (string.IsNullOrWhiteSpace(saveFolder))
          {
-            Console.WriteLine($"Must pass a value for {nameof(saveFolder)}.");
-            return;
+            throw new ArgumentNullException(nameof(saveFolder));
          }
 
          saveFolder = saveFolder.EndsWith('\\') ? saveFolder : saveFolder + "\\";
@@ -52,10 +51,7 @@ namespace DilbertImageDownloader
             }
             else
             {
-               Console.WriteLine("Can't find image for " + new FileInfo(filename).Name);
-               Console.WriteLine("Press Enter to continue.");
-               Console.ReadLine();
-               break;
+               throw new Exception("Can't find image for " + new FileInfo(filename).Name);
             }
          }
       }
