@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 
 namespace DilbertImageDownloader
 {
+   /// <summary>Downloads daily Dilbert comics.</summary>
    public class Program
    {
       private const string BaseUrl = "http://dilbert.com/strip/";
@@ -16,52 +14,33 @@ namespace DilbertImageDownloader
       private static readonly DateTime StartDate = new DateTime(1989, 4, 16);
       private const string SaveNameFormat = "Dilbert {date}.gif";
 
-      // dotnet run count=all autoclose=true savefolder=C:\BenEx\Humor\Dilbert readingfolder=C:\Ben\Desktop\Miguk\Dilbert
-      public static void Main(string[] args)
+      // dotnet run --save-folder=C:\BenEx\Humor\Dilbert
+      /// <param name="saveFolder">Base folder to save to. Subfolders will be created by year, as needed.</param>
+      public static void Main(string saveFolder)
       {
          Console.WriteLine("Dilbert Image Downloader");
 
-         ArrayList arguments = new ArrayList(args);
-
-         List<(string Key, string Value)> tokenizedArgs = args.Select(arg => arg.Split('=')).Select(keyAndValue => (keyAndValue[0], keyAndValue[1])).ToList();
-
-         string arg_count = GetArgValue(tokenizedArgs, "count");
-         bool downloadAllImages = arg_count == "all";
-         int numberOfImagesToDownload = int.TryParse(arg_count, out numberOfImagesToDownload) ? numberOfImagesToDownload : 1;
-
-         bool autoClose = bool.TryParse(GetArgValue(tokenizedArgs, "autoclose"), out autoClose) ? autoClose : false;
-
-         string arg_savefolder = GetArgValue(tokenizedArgs, "savefolder");
-         string saveFolder = string.IsNullOrWhiteSpace(arg_savefolder) || arg_savefolder.EndsWith('\\')
-                             ? arg_savefolder
-                             : arg_savefolder + "\\";
-
-         string arg_readingfolder = GetArgValue(tokenizedArgs, "readingfolder");
-         string readingFolder = string.IsNullOrWhiteSpace(arg_readingfolder) || arg_readingfolder.EndsWith('\\')
-                             ? arg_readingfolder
-                             : arg_readingfolder + "\\";
-
          if (string.IsNullOrWhiteSpace(saveFolder))
          {
-            Console.WriteLine("Must pass a value for savefolder.");
+            Console.WriteLine($"Must pass a value for {nameof(saveFolder)}.");
             return;
          }
 
-         for (int i = 0; i < numberOfImagesToDownload || downloadAllImages; i++)
+         saveFolder = saveFolder.EndsWith('\\') ? saveFolder : saveFolder + "\\";
+
+         while (true)
          {
             (DateTime date,
                 string formattedDate,
                 string foldername,
-                string foldernameForReading,
-                string filename,
-                string filenameForReading) = GetNextDayToSave(saveFolder, readingFolder);
+                string filename) = GetNextDayToSave(saveFolder);
 
             if (date > DateTime.Today)
             {
                break;
             }
 
-            EnsureDestinationFoldersExist(foldername, readingFolder, foldernameForReading);
+            Directory.CreateDirectory(foldername);
 
             string page = GetImagePage(formattedDate);
 
@@ -69,10 +48,6 @@ namespace DilbertImageDownloader
             {
                Console.Write("Downloading " + new FileInfo(filename).Name + " ...");
                new WebClient().DownloadFile(imageUrl, filename);
-               if (!string.IsNullOrWhiteSpace(readingFolder))
-               {
-                  File.Copy(filename, filenameForReading);
-               }
                Console.WriteLine(" Done");
             }
             else
@@ -83,55 +58,29 @@ namespace DilbertImageDownloader
                break;
             }
          }
-
-         if (!autoClose)
-         {
-            Console.WriteLine("Press Enter to exit.");
-            Console.ReadLine();
-         }
-      }
-
-      private static string GetArgValue(List<(string Key, string Value)> tokenizedArgs, string key)
-      {
-         return tokenizedArgs.SingleOrDefault(arg => arg.Key == key).Value;
       }
 
       private static
             (DateTime date,
             string formattedDate,
             string foldername,
-            string foldernameForReading,
-            string filename,
-            string filenameForReading) GetNextDayToSave(string saveFolder, string readingFolder)
+            string filename) GetNextDayToSave(string saveFolder)
       {
          DateTime date = StartDate.AddDays(-1);
          string formattedDate;
          string foldername;
-         string foldernameForReading;
          string filename;
-         string filenameForReading;
 
          do
          {
             date = date.AddDays(1);
             formattedDate = date.ToString("yyyy-MM-dd");
-            foldername = saveFolder + date.Year + @"\";
-            foldernameForReading = readingFolder + date.Year + @"\";
-            filename = foldername + SaveNameFormat.Replace("{date}", formattedDate);
-            filenameForReading = foldernameForReading + SaveNameFormat.Replace("{date}", formattedDate);
+            foldername = Path.Combine(saveFolder, date.Year.ToString());
+            filename = Path.Combine(foldername, SaveNameFormat.Replace("{date}", formattedDate));
          }
          while (File.Exists(filename));
 
-         return (date, formattedDate, foldername, foldernameForReading, filename, filenameForReading);
-      }
-
-      private static void EnsureDestinationFoldersExist(string foldername, string readingFolder, string foldernameForReading)
-      {
-         Directory.CreateDirectory(foldername);
-         if (!string.IsNullOrWhiteSpace(readingFolder))
-         {
-            Directory.CreateDirectory(foldernameForReading);
-         }
+         return (date, formattedDate, foldername, filename);
       }
 
       private static string GetImagePage(string formattedDate)
