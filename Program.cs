@@ -14,7 +14,6 @@ namespace DilbertImageDownloader
       private static readonly DateTime StartDate = new DateTime(1989, 4, 16);
       private const string SaveNameFormat = "Dilbert {date}.gif";
 
-      // dotnet run --save-folder=C:\BenEx\Humor\Dilbert
       /// <param name="saveFolder">Base folder to save to. Subfolders will be created by year, as needed.</param>
       public static void Main(string saveFolder)
       {
